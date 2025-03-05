@@ -1,0 +1,103 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: task-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: task_scheduler
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:6.2
+    container_name: task-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    container_name: task-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  zookeeper:
+    image: zookeeper:3.7
+    container_name: task-zookeeper
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/data
+
+#  backend:
+#    build:
+#      context: ./backend
+#      dockerfile: Dockerfile
+#    container_name: task-backend
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - mysql
+#      - redis
+#      - rabbitmq
+#      - zookeeper
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/task_scheduler?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+#      SPRING_DATASOURCE_USERNAME: root
+#      SPRING_DATASOURCE_PASSWORD: root
+#      SPRING_REDIS_HOST: redis
+#      SPRING_RABBITMQ_HOST: rabbitmq
+#      SPRING_RABBITMQ_USERNAME: admin
+#      SPRING_RABBITMQ_PASSWORD: admin
+#      ZOOKEEPER_SERVER: zookeeper:2181
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: task-frontend
+    ports:
+      - "80:80"
+#    depends_on:
+#      - backend
+
+  prometheus:
+    image: prom/prometheus:v2.30.3
+    container_name: task-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:8.2.0
+    container_name: task-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  mysql_data:
+  redis_data:
+  rabbitmq_data:
+  zookeeper_data:
+  prometheus_data:
+  grafana_data: 

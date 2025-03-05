@@ -1,0 +1,125 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: task-scheduler
+  
+  # 数据源配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/task_scheduler?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall,slf4j
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 10s
+    lettuce:
+      pool:
+        min-idle: 0
+        max-idle: 8
+        max-active: 8
+        max-wait: -1ms
+
+  # RabbitMQ配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2.0
+          max-interval: 10000
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.scheduler.common.model
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT配置
+jwt:
+  secret: your-secret-key
+  expiration: 86400 # 24小时
+
+# ZooKeeper配置
+zookeeper:
+  connect-string: localhost:2181
+  session-timeout: 30000
+  connection-timeout: 10000
+  retry:
+    base-sleep-time: 1000
+    max-retries: 3
+
+# 邮件配置
+mail:
+  host: smtp.example.com
+  port: 587
+  username: your-email@example.com
+  password: your-password
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+
+# 钉钉配置
+dingtalk:
+  webhook: https://oapi.dingtalk.com/robot/send?access_token=your-access-token
+
+# 企业微信配置
+wechat-work:
+  webhook: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key
+
+# 短信配置
+sms:
+  access-key: your-access-key
+  secret-key: your-secret-key
+  sign-name: your-sign-name
+  template-code: your-template-code
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.scheduler: DEBUG
+  file:
+    name: logs/task-scheduler.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 1GB 

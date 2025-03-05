@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scheduler.common.mapper.TaskExecutionMapper">
+    
+    <resultMap id="BaseResultMap" type="com.scheduler.common.model.TaskExecution">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="type" property="type"/>
+        <result column="status" property="status"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="duration" property="duration"/>
+        <result column="result" property="result"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="retry_count" property="retryCount"/>
+        <result column="node_id" property="nodeId"/>
+        <result column="ip" property="ip"/>
+        <result column="exit_code" property="exitCode"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        id, task_id, type, status, start_time, end_time, duration, result, error_message,
+        retry_count, node_id, ip, exit_code, del_flag, create_time, update_time, create_by,
+        update_by, remark
+    </sql>
+    
+    <select id="selectById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from task_execution
+        where id = #{id} and del_flag = 0
+    </select>
+    
+    <select id="selectList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from task_execution
+        <where>
+            <if test="taskId != null">
+                and task_id = #{taskId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and end_time &lt;= #{endTime}
+            </if>
+            and del_flag = 0
+        </where>
+        order by create_time desc
+    </select>
+    
+    <insert id="insert" parameterType="com.scheduler.common.model.TaskExecution" useGeneratedKeys="true" keyProperty="id">
+        insert into task_execution (
+            task_id, type, status, start_time, end_time, duration, result, error_message,
+            retry_count, node_id, ip, exit_code, create_by, update_by, remark
+        ) values (
+            #{taskId}, #{type}, #{status}, #{startTime}, #{endTime}, #{duration}, #{result}, #{errorMessage},
+            #{retryCount}, #{nodeId}, #{ip}, #{exitCode}, #{createBy}, #{updateBy}, #{remark}
+        )
+    </insert>
+    
+    <update id="update" parameterType="com.scheduler.common.model.TaskExecution">
+        update task_execution
+        <set>
+            <if test="type != null">type = #{type},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="duration != null">duration = #{duration},</if>
+            <if test="result != null">result = #{result},</if>
+            <if test="errorMessage != null">error_message = #{errorMessage},</if>
+            <if test="retryCount != null">retry_count = #{retryCount},</if>
+            <if test="nodeId != null">node_id = #{nodeId},</if>
+            <if test="ip != null">ip = #{ip},</if>
+            <if test="exitCode != null">exit_code = #{exitCode},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id} and del_flag = 0
+    </update>
+    
+    <update id="deleteById">
+        update task_execution set del_flag = 1 where id = #{id}
+    </update>
+    
+    <update id="updateStatus">
+        update task_execution set status = #{status} where id = #{id} and del_flag = 0
+    </update>
+    
+    <select id="selectLastByTaskId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from task_execution
+        where task_id = #{taskId} and del_flag = 0
+        order by create_time desc
+        limit 1
+    </select>
+    
+    <select id="selectCountByTaskId" resultType="int">
+        select count(*)
+        from task_execution
+        where task_id = #{taskId} and del_flag = 0
+    </select>
+    
+</mapper> 

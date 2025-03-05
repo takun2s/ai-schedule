@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: scheduler
+    ports:
+      - "3306:3306"
+    volumes:
+      - test/data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    volumes:
+      - test/data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: zookeeper:3.7
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD", "echo", "stat", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.30.3
+    ports:
+      - "9090:9090"
+    volumes:
+      - test/config/prometheus:/etc/prometheus
+      - test/data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  grafana:
+    image: grafana/grafana:8.1.2
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - test/data/grafana:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  elasticsearch:
+    image: elasticsearch:7.15.0
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - test/data/elasticsearch:/usr/share/elasticsearch/data
+
+  logstash:
+    image: logstash:7.15.0
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    volumes:
+      - test/config/logstash:/usr/share/logstash/config
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: kibana:7.15.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - MYSQL_HOST=mysql
+      - REDIS_HOST=redis
+      - ZOOKEEPER_HOST=zookeeper
+    depends_on:
+      - mysql
+      - redis
+      - zookeeper
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    ports:
+      - "80:80"
+    depends_on:
+      - backend 
