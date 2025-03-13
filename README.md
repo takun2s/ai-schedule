@@ -1,93 +1,58 @@
 # 说明
-**这是由 AI 生成的项目，目前还在调试中**
+这个是使用 Copilot 生成的调度系统，模型：Claude 3.5 Sonnet
 
-# 分布式任务调度系统
+# 任务调度系统
 
-## 项目简介
-这是一个基于Spring Boot + Vue的分布式任务调度系统，支持多种任务类型、分布式部署、任务监控和告警等功能。
+## 开发注意事项
 
-## 系统架构
-### 技术栈
-- 后端：Spring Boot 2.7.x + MyBatis + Spring Security
-- 前端：Vue 3 + Element Plus
-- 数据库：MySQL 8.0
-- 分布式协调：ZooKeeper
-- 消息队列：RabbitMQ
-- 监控：Prometheus + Grafana
+### 版本要求
+- JDK: 8
+- MySQL: 8.0
+- Redis: latest
+- Maven: 3.6+
+- Node.js: 14+
 
-### 核心功能
-1. 用户认证与权限控制
-   - 基于JWT的认证机制
-   - RBAC权限模型
-   - 多角色支持
+### 数据库配置
+1. 确保所有相关表已通过 Flyway 迁移创建
+2. 配置文件中的数据库连接信息正确
 
-2. 任务管理
-   - 支持Shell命令任务
-   - 支持JAR包任务
-   - 支持手动触发
-   - 支持定时调度
-   - 支持API触发
-   - 支持任务流程编排
+### 开发规范
+1. 所有 API 接口需添加 Swagger 文档注释
+2. 代码提交前需运行单元测试
+3. 保持代码格式统一，使用项目提供的 .editorconfig
 
-3. 分布式特性
-   - 基于ZooKeeper的集群管理
-   - 任务分片执行
-   - 故障转移
-   - 负载均衡
+### 实现注意事项
+1. TaskService 相关方法的完整实现：
+   - executeTask()
+   - stopTask()
+   - getTaskStatus()
+   - handleTaskCallback()
 
-4. 监控告警
-   - 任务执行状态监控
-   - 系统资源监控
-   - 自定义告警规则
-   - 多渠道告警（邮件、短信、Webhook）
+2. DAG 实现要点：
+   - DAG 执行引擎的完整实现
+   - 节点依赖关系管理
+   - 执行状态实时跟踪
+   - 失败重试机制
+   - 任务超时处理
+   - 任务执行结果回调处理
 
-## 项目结构
-```
-task-scheduler/
-├── backend/                # 后端服务
-│   ├── common/            # 公共模块
-│   ├── scheduler-core/    # 调度核心模块
-│   ├── scheduler-api/     # API接口模块
-│   └── scheduler-web/     # Web应用模块
-├── frontend/              # 前端应用
-│   ├── src/
-│   └── public/
-└── docker/               # Docker配置文件
-```
+3. 监控告警：
+   - 添加详细的日志记录
+   - 实现任务执行监控
+   - 配置异常告警机制
+   - 添加性能指标收集
 
-## 快速开始
-1. 环境要求
-   - JDK 11+
-   - Node.js 16+
-   - MySQL 8.0+
-   - ZooKeeper 3.7+
-   - RabbitMQ 3.9+
-   - Prometheus + Grafana
+4. 安全性：
+   - 确保 JWT token 正确配置
+   - 实现适当的权限控制
+   - 数据库密码加密存储
+   - API 访问控制
 
-2. 配置说明
-   - 数据库配置：application.yml
-   - ZooKeeper配置：application.yml
-   - RabbitMQ配置：application.yml
-   - 邮件配置：application.yml
+5. 高可用：
+   - 任务执行节点的负载均衡
+   - 数据库主从配置
+   - Redis 集群配置
+   - ZooKeeper 集群配置
 
-3. 启动步骤
-   ```bash
-   # 后端启动
-   cd backend
-   mvn clean package
-   java -jar scheduler-web/target/scheduler-web.jar
-
-   # 前端启动
-   cd frontend
-   npm install
-   npm run serve
-   ```
-
-## 开发计划
-- [x] 基础框架搭建
-- [x] 用户认证与权限
-- [x] 任务管理
-- [x] 分布式调度
-- [x] 监控告警
-- [ ] 任务流程编排
-- [ ] 更多任务类型支持 
+## 部署说明
+// ...existing deployment instructions...

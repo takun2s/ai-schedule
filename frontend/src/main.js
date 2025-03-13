@@ -1,14 +1,19 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import store from './store'
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+import axios from './utils/axios'
 
-const app = createApp(App)
+Vue.use(ElementUI)
+Vue.config.productionTip = false
 
-app.use(createPinia())
-app.use(router)
-app.use(ElementPlus)
+// 配置axios
+Vue.prototype.$http = axios  // 将封装的请求方法挂载到Vue实例上
 
-app.mount('#app') 
+new Vue({
+  router,
+  store,
+  render: h => h(App)
+}).$mount('#app')

@@ -1,0 +1,167 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: scheduler
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/scheduler?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    # Druid 连接池配置
+    druid:
+      # 初始连接数
+      initial-size: 5
+      # 最小连接池数量
+      min-idle: 5
+      # 最大连接池数量
+      max-active: 20
+      # 获取连接时最大等待时间，单位毫秒
+      max-wait: 60000
+      # 验证查询
+      validation-query: SELECT 1
+      validation-query-timeout: 1
+      # 验证连接的有效性
+      test-while-idle: true
+      # 是否在获取连接后检测其可用性
+      test-on-borrow: false
+      # 是否在连接放回连接池后检测其可用性
+      test-on-return: false
+      # 配置监控统计拦截的filters
+      filters: stat,wall
+      # 打开PSCache，并指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      async-init: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/quartz_tables.sql
+      # 只在第一次启动时执行
+      continue-on-error: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your-email@gmail.com
+    password: your-app-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 0
+    timeout: 10000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      fail-on-empty-beans: false
+
+  # 删除 mybatis 配置
+  # mybatis:
+  #   mapper-locations: classpath:mapper/*.xml
+  #   configuration:
+  #     map-underscore-to-camel-case: true
+
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+
+zookeeper:
+  connect-string: localhost:2181
+  session-timeout: 15000
+  connection-timeout: 5000
+  namespace: scheduler
+
+prometheus:
+  metrics:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: scheduler
+
+logging:
+  level:
+    root: INFO
+    com.scheduler: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+  file:
+    name: logs/scheduler.log
+
+jwt:
+  secret: your-secret-key
+  expiration: 86400  # 24小时
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: scheduler
+
+quartz:
+  job-store-type: jdbc
+  properties:
+    org:
+      quartz:
+        scheduler:
+          instanceId: AUTO
+        jobStore:
+          class: org.quartz.impl.jdbcjobstore.JobStoreTX
+          driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+          tablePrefix: QRTZ_
+          isClustered: true
+          clusterCheckinInterval: 10000
+          useProperties: false
+        threadPool:
+          class: org.quartz.simpl.SimpleThreadPool
+          threadCount: 10
+          threadPriority: 5
+          threadsInheritContextClassLoaderOfInitializingThread: true
+
+notification:
+  email:
+    enabled: true
+    template-path: classpath:templates/email/
+  webhook:
+    enabled: true
+    timeout: 5000
+
+app:
+  upload:
+    dir: ${user.home}/scheduler/uploads
